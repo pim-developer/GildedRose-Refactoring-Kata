@@ -218,7 +218,11 @@ internal class GildedRoseTest {
     fun `Test 'Sulfuras, Hand of Ragnaros' never decreases in Quality or SellIn`() {
         val items = listOf(
             Item("Sulfuras, Hand of Ragnaros", 0, 80), // Sulfuras with initial SellIn and Quality
-            Item("Sulfuras, Hand of Ragnaros", -1, 100) // Another Sulfuras with different SellIn and Quality
+            Item(
+                "Sulfuras, Hand of Ragnaros",
+                -1,
+                100
+            ) // Another Sulfuras with different SellIn and Quality
         )
 
         val app = GildedRose(items)
@@ -246,6 +250,66 @@ internal class GildedRoseTest {
             100,
             items[1].quality,
             "Quality for Sulfuras should remain unchanged"
+        )
+    }
+
+    /* WIP: (BOOKMARK) - use subclass for Backstage passes */
+    @Test
+    fun `Test 'Backstage passes to a TAFKAL80ETC concert' increases in Quality as SellIn approaches`() {
+        val items = listOf(
+            Item("Backstage passes to a TAFKAL80ETC concert", 15, 10), // More than 10 days
+            Item("Backstage passes to a TAFKAL80ETC concert", 10, 20), // 10 days or less
+            Item("Backstage passes to a TAFKAL80ETC concert", 5, 30),  // 5 days or less
+            Item("Backstage passes to a TAFKAL80ETC concert", 0, 40)   // Concert day
+        )
+
+        val app = GildedRose(items)
+
+        // simulate end of day 0
+        app.updateQuality()
+
+        assertEquals(
+            14,
+            items[0].sellIn,
+            "SellIn for Backstage passes should decrease by 1"
+        )
+        assertEquals(
+            11,
+            items[0].quality,
+            "Quality for Backstage passes should increase by 1"
+        )
+
+        assertEquals(
+            9,
+            items[1].sellIn,
+            "SellIn for Backstage passes should decrease by 1"
+        )
+        assertEquals(
+            22,
+            items[1].quality,
+            "Quality for Backstage passes should increase by 2 (10 days or less)"
+        )
+
+        assertEquals(
+            4,
+            items[2].sellIn,
+            "SellIn for Backstage passes should decrease by 1"
+        )
+        assertEquals(
+            33,
+            items[2].quality,
+            "Quality for Backstage passes should increase by 3 (5 days or less)"
+        )
+
+        assertEquals(
+            -1,
+            items[3].sellIn,
+            "SellIn for Backstage passes should decrease by 1"
+        )
+        assertEquals(
+            0,
+            items[3].quality,
+            "Quality for Backstage passes should drop to 0 after the concert"
         )
     }
 
