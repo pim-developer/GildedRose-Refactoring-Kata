@@ -114,6 +114,41 @@ internal class GildedRoseTest {
         )
     }
 
+    @Test
+    fun `Test default item degrades Quality twice as fast after SellIn has passed`() {
+        val items = listOf(
+            Item("foo", 0, 10), // Item at sell-by date
+            Item("bar", -1, 8)  // Item past sell-by date
+        )
+
+        val app = GildedRose(items)
+
+        // simulate end of day
+        app.updateQuality()
+
+        assertEquals(
+            -1,
+            items[0].sellIn,
+            "Item sellIn for `foo` should be lowered by 1"
+        )
+        assertEquals(
+            8,
+            items[0].quality,
+            "Item quality for `foo` should be lowered by 2 (twice as fast after SellIn passed)"
+        )
+
+        assertEquals(
+            -2,
+            items[1].sellIn,
+            "Item sellIn for `bar` should be lowered by 1"
+        )
+        assertEquals(
+            6,
+            items[1].quality,
+            "Item quality for `bar` should be lowered by 2 (already past SellIn)"
+        )
+    }
+
 }
 
 
