@@ -174,6 +174,46 @@ internal class GildedRoseTest {
         )
     }
 
+    /* WIP: (BOOKMARK) - use subclass for Aged Brie */
+    @Test
+    fun `Test Aged Brie increases in Quality as it gets older`() {
+        val items = listOf(
+            Item("Aged Brie", 2, 0),  // Aged Brie with initial Quality of 0
+            Item("Aged Brie", 1, 5)   // Aged Brie with initial Quality of 5
+        )
+
+        val app = GildedRose(items)
+
+        // simulate end of day 0
+        app.updateQuality()
+
+        // simulate end of day 1
+        app.updateQuality()
+
+        assertEquals(
+            0,
+            items[0].sellIn,
+            "SellIn for Aged Brie should be decreased by 2 after 2 days"
+        )
+        assertEquals(
+            2,
+            items[0].quality,
+            "Quality for Aged Brie should increase from 0 to 2 after 2 days"
+        )
+
+        assertEquals(
+            -1,
+            items[1].sellIn,
+            "SellIn for Aged Brie should be decreased by 2 after 2 days"
+        )
+        assertEquals(
+            8,
+            items[1].quality,
+            "Quality for Aged Brie should increase from 5 to 8 after 2 days, increasing in quality twice as fast after SellIn passed"
+        )
+    }
+
+
 }
 
 
