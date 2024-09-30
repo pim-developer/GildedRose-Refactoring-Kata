@@ -254,7 +254,7 @@ internal class GildedRoseTest {
         assertEquals(
             0,
             items[0].sellIn,
-            "SellIn for Sulfuras should be -1 to indicate never to be sold"
+            "SellIn for Sulfuras should remain unchanged"
         )
         assertEquals(
             80,
@@ -265,7 +265,7 @@ internal class GildedRoseTest {
         assertEquals(
             -1,
             items[1].sellIn,
-            "SellIn for Sulfuras should be -1 to indicate never to be sold"
+            "SellIn for Sulfuras should remain unchanged"
         )
         assertEquals(
             100,
