@@ -114,11 +114,13 @@ internal class GildedRoseTest {
         )
     }
 
+    /* WIP: (BOOKMARK) - use subclasses for items*/
     @Test
-    fun `Test normal item degrades Quality twice as fast after SellIn has passed`() {
+    fun `Test item degrades Quality twice as fast after SellIn has passed`() {
         val items = listOf(
-            Item("foo", 0, 10), // Item at sell-by date
-            Item("bar", -1, 8)  // Item past sell-by date
+            Item("foo", 0, 10), // normal item at sell-by date
+            Item("bar", -1, 8), // normal item past sell-by date
+            Item("Conjured Mana Cake", -1, 8)  // conjured item past sell-by date
         )
 
         val app = GildedRose(items)
@@ -147,13 +149,26 @@ internal class GildedRoseTest {
             items[1].quality,
             "Item quality for `bar` should be lowered by 2 (already past SellIn)"
         )
+
+        assertEquals(
+            -2,
+            items[2].sellIn,
+            "Item sellIn for conjured should be lowered by 1"
+        )
+        assertEquals(
+            4,
+            items[2].quality,
+            "Item quality for conjured should be lowered by 4 (past SellIn so degrades twice as fast, also degrades twice as fast for being conjured)"
+        )
     }
 
+    /* WIP: (BOOKMARK) - use suclasses for items */
     @Test
     fun `Test the Quality of a normal item is never negative`() {
         val items = listOf(
-            Item("foo", 1, 0),  // Item with Quality already at 0
-            Item("bar", -1, 1)  // Item past sell-by date with low Quality
+            Item("foo", 1, 0),  // normal item with Quality already at 0
+            Item("Conjured Mana Cake", 0, 1),  // conjured past sell-by date with low Quality
+            Item("bar", -1, 1)  // normal item past sell-by date with low Quality
         )
 
         val app = GildedRose(items)
@@ -171,6 +186,12 @@ internal class GildedRoseTest {
             0,
             items[1].quality,
             "Item quality for `bar` should not drop below 0"
+        )
+
+        assertEquals(
+            0,
+            items[2].quality,
+            "Item quality for conjured should not drop below 0"
         )
     }
 
@@ -313,6 +334,41 @@ internal class GildedRoseTest {
         )
     }
 
+    /* WIP: (BOOKMARK) - use subclass for items*/
+    @Test
+    fun `Test Conjured items degrade in Quality twice as fast as normal items`() {
+        val items = listOf(
+            Item("Conjured Mana Cake", 1, 6), // Conjured item
+            Item("Normal Item", 3, 6)         // Normal item
+        )
+
+        val app = GildedRose(items)
+
+        // simulate end of day 0
+        app.updateQuality()
+
+        assertEquals(
+            0,
+            items[0].sellIn,
+            "SellIn for Conjured item should decrease by 1"
+        )
+        assertEquals(
+            4,
+            items[0].quality,
+            "Quality for Conjured item should decrease by 2 (degrades twice as fast)"
+        )
+
+        assertEquals(
+            2,
+            items[1].sellIn,
+            "SellIn for normal item should decrease by 1"
+        )
+        assertEquals(
+            5,
+            items[1].quality,
+            "Quality for normal item should decrease by 1"
+        )
+    }
 
 }
 
