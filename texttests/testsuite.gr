@@ -1,2 +1,12 @@
 # With one example of each special item, run for 30 days updating sellIn and quality.
 ThirtyDays
+
+# With one example of each special item, run for 0 days updating sellIn and quality.
+ZeroDay
+
+# With one example of each special item, run for 1 days updating sellIn and quality.
+OneDay
+
+# With one example of each special item, run for 2 days updating sellIn and quality.
+TwoDay
+
