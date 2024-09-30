@@ -43,7 +43,7 @@ internal class GildedRoseTest {
 
 
     @Test
-    fun `Test default (not special) item has lowered SellIn and Quality at end of day`() {
+    fun `Test normal item has lowered SellIn and Quality at end of day`() {
         val items = listOf(
             Item("foo", 1, 2),
             Item("bar", 3, 4),
@@ -78,7 +78,7 @@ internal class GildedRoseTest {
     }
 
     @Test
-    fun `Test default (not special) item has lowered SellIn and Quality after multiple days (2)`() {
+    fun `Test normal item has lowered SellIn and Quality after multiple days (2)`() {
         val items = listOf(
             Item("foo", 2, 3),
             Item("bar", 4, 5),
@@ -115,7 +115,7 @@ internal class GildedRoseTest {
     }
 
     @Test
-    fun `Test default item degrades Quality twice as fast after SellIn has passed`() {
+    fun `Test normal item degrades Quality twice as fast after SellIn has passed`() {
         val items = listOf(
             Item("foo", 0, 10), // Item at sell-by date
             Item("bar", -1, 8)  // Item past sell-by date
@@ -146,6 +146,31 @@ internal class GildedRoseTest {
             6,
             items[1].quality,
             "Item quality for `bar` should be lowered by 2 (already past SellIn)"
+        )
+    }
+
+    @Test
+    fun `Test the Quality of a normal item is never negative`() {
+        val items = listOf(
+            Item("foo", 1, 0),  // Item with Quality already at 0
+            Item("bar", -1, 1)  // Item past sell-by date with low Quality
+        )
+
+        val app = GildedRose(items)
+
+        // simulate end of day
+        app.updateQuality()
+
+        assertEquals(
+            0,
+            items[0].quality,
+            "Item quality for `foo` should remain at 0 and never be negative"
+        )
+
+        assertEquals(
+            0,
+            items[1].quality,
+            "Item quality for `bar` should not drop below 0"
         )
     }
 
