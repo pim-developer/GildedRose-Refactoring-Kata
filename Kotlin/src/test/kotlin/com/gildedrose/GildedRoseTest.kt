@@ -176,7 +176,7 @@ internal class GildedRoseTest {
 
     /* WIP: (BOOKMARK) - use subclass for Aged Brie */
     @Test
-    fun `Test Aged Brie increases in Quality as it gets older`() {
+    fun `Test 'Aged Brie' increases in Quality as it gets older`() {
         val items = listOf(
             Item("Aged Brie", 2, 0),  // Aged Brie with initial Quality of 0
             Item("Aged Brie", 1, 5)   // Aged Brie with initial Quality of 5
@@ -210,6 +210,42 @@ internal class GildedRoseTest {
             8,
             items[1].quality,
             "Quality for Aged Brie should increase from 5 to 8 after 2 days, increasing in quality twice as fast after SellIn passed"
+        )
+    }
+
+    /* WIP: (BOOKMARK) - use subclass for Sulfuras */
+    @Test
+    fun `Test 'Sulfuras, Hand of Ragnaros' never decreases in Quality or SellIn`() {
+        val items = listOf(
+            Item("Sulfuras, Hand of Ragnaros", 0, 80), // Sulfuras with initial SellIn and Quality
+            Item("Sulfuras, Hand of Ragnaros", -1, 100) // Another Sulfuras with different SellIn and Quality
+        )
+
+        val app = GildedRose(items)
+
+        // simulate end of day
+        app.updateQuality()
+
+        assertEquals(
+            0,
+            items[0].sellIn,
+            "SellIn for Sulfuras should be -1 to indicate never to be sold"
+        )
+        assertEquals(
+            80,
+            items[0].quality,
+            "Quality for Sulfuras should remain unchanged"
+        )
+
+        assertEquals(
+            -1,
+            items[1].sellIn,
+            "SellIn for Sulfuras should be -1 to indicate never to be sold"
+        )
+        assertEquals(
+            100,
+            items[1].quality,
+            "Quality for Sulfuras should remain unchanged"
         )
     }
 
