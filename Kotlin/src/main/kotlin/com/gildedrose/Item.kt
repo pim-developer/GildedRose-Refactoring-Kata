@@ -13,34 +13,49 @@ enum class SpecialItemNames(val value: String) {
     CONJURED("Conjured Mana Cake");
 }
 
-// Subclass for Sulfuras Item
-class SulfurasItem(
-    sellIn: Int,
-    quality: Int
-) : Item(SpecialItemNames.SULFURAS.value, sellIn, quality)
+const val DEFAULT_MAXIMUM_ITEM_QUALITY = 50
+const val MINIMUM_ITEM_QUALITY = 0
 
-// Subclass for Aged Brie Item
-class AgedBrieItem(
-    sellIn: Int,
-    quality: Int
-) : Item(SpecialItemNames.AGED_BRIE.value, sellIn, quality)
+fun Item.updateQuality() {
+    when (name) {
+        SpecialItemNames.SULFURAS.value -> {
+            // skip SULFURAS as it doesn't degrade or expire
+            return
+        }
 
-// Subclass for Backstage Passes Item
-class BackstagePassesItem(
-    sellIn: Int,
-    quality: Int
-) : Item(SpecialItemNames.BACKSTAGE_PASSES.value, sellIn, quality)
+        SpecialItemNames.AGED_BRIE.value -> {
+            quality = if (sellIn <= 0) {
+                // Increases in quality twice as fast after SellIn has passed
+                (quality + 2).coerceAtMost(DEFAULT_MAXIMUM_ITEM_QUALITY)
+            } else {
+                // Always increases in quality (default by 1)
+                (quality + 1).coerceAtMost(DEFAULT_MAXIMUM_ITEM_QUALITY)
+            }
+        }
 
-// Subclass for Conjured Item
-class ConjuredItem(
-    sellIn: Int,
-    quality: Int
-) : Item(SpecialItemNames.CONJURED.value, sellIn, quality)
+        SpecialItemNames.BACKSTAGE_PASSES.value -> {
+            quality = if (sellIn <= 0) {
+                // Expired so 0
+                MINIMUM_ITEM_QUALITY
+            } else if (sellIn <= 5) {
+                // Quality increases by 3 when there are 5 days or less
+                (quality + 3).coerceAtMost(DEFAULT_MAXIMUM_ITEM_QUALITY)
+            } else if (sellIn <= 10) {
+                // Quality increases by 2 when there are 10 days or less
+                (quality + 2).coerceAtMost(DEFAULT_MAXIMUM_ITEM_QUALITY)
+            } else {
+                // Always increases in quality unless expired (default by 1)
+                (quality + 1).coerceAtMost(DEFAULT_MAXIMUM_ITEM_QUALITY)
+            }
+        }
 
-// Subclass for Conjured Item
-class NormalItem(
-    name: String,
-    sellIn: Int,
-    quality: Int
-) : Item(name, sellIn, quality)
-
+        else -> {
+            quality = if (sellIn <= 0) {
+                (quality - 2).coerceAtLeast(MINIMUM_ITEM_QUALITY)
+            } else {
+                (quality - 1).coerceAtLeast(MINIMUM_ITEM_QUALITY)
+            }
+        }
+    }
+    sellIn -= 1
+}
