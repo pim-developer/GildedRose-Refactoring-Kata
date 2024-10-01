@@ -15,6 +15,11 @@ enum class SpecialItemNames(val value: String) {
 
 const val DEFAULT_MAXIMUM_ITEM_QUALITY = 50
 const val MINIMUM_ITEM_QUALITY = 0
+const val DEFAULT_QUALITY_DECREASE = -1
+const val DEFAULT_QUALITY_INCREASE = DEFAULT_QUALITY_DECREASE * -1 // Inverse to decrease
+const val BACKSTAGE_PASS_QUALITY_INCREASE_FINAL_DAYS = 3  // When 5 days or less
+const val BACKSTAGE_PASS_QUALITY_INCREASE_SOON = 2       // When 10 days or less
+const val DEFAULT_QUALITY_EXPIRED_MULTIPLIER = 2
 
 fun Item.updateQuality() {
     // SULFURAS never changes
@@ -24,6 +29,7 @@ fun Item.updateQuality() {
     val qualityChange = when (name) {
         SpecialItemNames.AGED_BRIE.value -> getAgedBrieQualityChange()
         SpecialItemNames.BACKSTAGE_PASSES.value -> getBackstagePassesQualityChange()
+//        SpecialItemNames.CONJURED.value -> getNormalItemQualityChange() * 2
         else -> getNormalItemQualityChange()
     }
 
@@ -32,22 +38,21 @@ fun Item.updateQuality() {
     sellIn -= 1
 }
 
-private fun Item.getAgedBrieQualityChange() = if (sellIn <= 0) {
-    2 // Increases in quality twice as fast after SellIn has passed
+private fun Item.getNormalItemQualityChange() = if (sellIn <= 0) {
+    DEFAULT_QUALITY_DECREASE * DEFAULT_QUALITY_EXPIRED_MULTIPLIER // Decreases in quality twice as fast when SellIn has passed
 } else {
-    1 // Always increases in quality (default by 1)
+    DEFAULT_QUALITY_DECREASE
+}
+
+private fun Item.getAgedBrieQualityChange() = if (sellIn <= 0) {
+    DEFAULT_QUALITY_INCREASE * DEFAULT_QUALITY_EXPIRED_MULTIPLIER // Increases in quality twice as fast after SellIn has passed
+} else {
+    DEFAULT_QUALITY_INCREASE // Always increases in quality (default by 1)
 }
 
 private fun Item.getBackstagePassesQualityChange() = when {
     sellIn <= 0 -> -quality // Expired so minus the inverse to make 0
-    sellIn <= 5 -> 3 // Quality increases by 3 when there are 5 days or less
-    sellIn <= 10 -> 2 // Quality increases by 2 when there are 10 days or less
-    else -> 1    // Quality always increases unless expired (default by 1)
-}
-
-
-private fun Item.getNormalItemQualityChange() = if (sellIn <= 0) {
-    -2 // Decreases in quality twice as fast when SellIn has passed
-} else {
-    -1
+    sellIn <= 5 -> BACKSTAGE_PASS_QUALITY_INCREASE_FINAL_DAYS // Quality increases by 3 when there are 5 days or less
+    sellIn <= 10 -> BACKSTAGE_PASS_QUALITY_INCREASE_SOON // Quality increases by 2 when there are 10 days or less
+    else -> DEFAULT_QUALITY_INCREASE // Quality always increases unless expired (default by 1)
 }
