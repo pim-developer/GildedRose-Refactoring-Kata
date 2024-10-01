@@ -72,13 +72,13 @@ private fun Item.updateQuality() {
         )
 }
 
+// * @param isExpiredMultiplier is `2` by default (decreases in quality twice as fast if `sellIn` is `0` or less). TODO: Can be implemented if needed
 /**
  *
  * Multiplies `change` with `isExpiredMultiplier` if this `Item`'s `sellIn` date is `0` or less. Otherwise just returns `change`.
  *
  * @return the change at end of day to be applied to the `Item`'s `quality`.
  * @param change is `-1` by default (decrease in quality).
-// * @param isExpiredMultiplier is `2` by default (decreases in quality twice as fast if `sellIn` is `0` or less). TODO: Can be implemented if needed
  * */
 private fun Item.getItemQualityChange(
     change: Int = QualityRules.DEFAULT_DECREASE,
