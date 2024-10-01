@@ -120,7 +120,7 @@ internal class GildedRoseTest {
         val items = listOf(
             Item("foo", 0, 10), // normal item at sell-by date
             Item("bar", -1, 8), // normal item past sell-by date
-            Item(SpecialItemNames.CONJURED.value, -1, 8)  // conjured item past sell-by date
+            Item(SpecialItems.CONJURED.value, -1, 8)  // conjured item past sell-by date
         )
 
         val app = GildedRose(items)
@@ -159,7 +159,7 @@ internal class GildedRoseTest {
         assertEquals(
             4,
             items[2].quality,
-            "Item quality for conjured should be lowered by 4 (past SellIn so degrades twice as fast, also degrades twice as fast for being conjured)"
+            "Item quality for conjured should be lowered by 4 (past SellIn so degrades twice as fast)"
         )
     }
 
@@ -168,7 +168,7 @@ internal class GildedRoseTest {
         val items = listOf(
             Item("foo", 1, 0),  // normal item with Quality already at 0
             Item(
-                SpecialItemNames.CONJURED.value,
+                SpecialItems.CONJURED.value,
                 0,
                 1
             ),  // conjured past sell-by date with low Quality
@@ -202,8 +202,8 @@ internal class GildedRoseTest {
     @Test
     fun `Test 'Aged Brie' increases in Quality as it gets older`() {
         val items = listOf(
-            Item(SpecialItemNames.AGED_BRIE.value, 2, 0),  // Aged Brie with initial Quality of 0
-            Item(SpecialItemNames.AGED_BRIE.value, 1, 5)   // Aged Brie with initial Quality of 5
+            Item(SpecialItems.AGED_BRIE.value, 2, 0),  // Aged Brie with initial Quality of 0
+            Item(SpecialItems.AGED_BRIE.value, 1, 5)   // Aged Brie with initial Quality of 5
         )
 
         val app = GildedRose(items)
@@ -263,12 +263,12 @@ internal class GildedRoseTest {
     fun `Test 'Sulfuras, Hand of Ragnaros' never decreases in Quality or SellIn`() {
         val items = listOf(
             Item(
-                SpecialItemNames.SULFURAS.value,
+                SpecialItems.SULFURAS.value,
                 0,
                 80
             ), // Sulfuras with initial SellIn and Quality
             Item(
-                SpecialItemNames.SULFURAS.value,
+                SpecialItems.SULFURAS.value,
                 -1,
                 100
             ) // Another Sulfuras with different SellIn and Quality
@@ -305,10 +305,10 @@ internal class GildedRoseTest {
     @Test
     fun `Test 'Backstage passes to a TAFKAL80ETC concert' increases in Quality as SellIn approaches`() {
         val items = listOf(
-            Item(SpecialItemNames.BACKSTAGE_PASSES.value, 15, 10), // More than 10 days
-            Item(SpecialItemNames.BACKSTAGE_PASSES.value, 10, 20), // 10 days or less
-            Item(SpecialItemNames.BACKSTAGE_PASSES.value, 5, 30),  // 5 days or less
-            Item(SpecialItemNames.BACKSTAGE_PASSES.value, 0, 40)   // Concert day
+            Item(SpecialItems.BACKSTAGE_PASSES.value, 15, 10), // More than 10 days
+            Item(SpecialItems.BACKSTAGE_PASSES.value, 10, 20), // 10 days or less
+            Item(SpecialItems.BACKSTAGE_PASSES.value, 5, 30),  // 5 days or less
+            Item(SpecialItems.BACKSTAGE_PASSES.value, 0, 40)   // Concert day
         )
 
         val app = GildedRose(items)
@@ -364,7 +364,7 @@ internal class GildedRoseTest {
     @Test
     fun `Test Conjured items degrade in Quality twice as fast as normal items`() {
         val items = listOf(
-            Item(SpecialItemNames.CONJURED.value, 1, 6), // Conjured item
+            Item(SpecialItems.CONJURED.value, 1, 6), // Conjured item
             Item("Normal Item", 3, 6)         // Normal item
         )
 

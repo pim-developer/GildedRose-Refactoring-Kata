@@ -6,53 +6,92 @@ open class Item(var name: String, var sellIn: Int, var quality: Int) {
     }
 }
 
-enum class SpecialItemNames(val value: String) {
+// a sealed class would be less performant
+enum class SpecialItems(val value: String) {
     SULFURAS("Sulfuras, Hand of Ragnaros"),
     AGED_BRIE("Aged Brie"),
     BACKSTAGE_PASSES("Backstage passes to a TAFKAL80ETC concert"),
     CONJURED("Conjured Mana Cake");
 }
 
-const val DEFAULT_MAXIMUM_ITEM_QUALITY = 50
-const val MINIMUM_ITEM_QUALITY = 0
-const val DEFAULT_QUALITY_DECREASE = -1
-const val DEFAULT_QUALITY_INCREASE = DEFAULT_QUALITY_DECREASE * -1 // Inverse to decrease
-const val BACKSTAGE_PASS_QUALITY_INCREASE_FINAL_DAYS = 3  // When 5 days or less
-const val BACKSTAGE_PASS_QUALITY_INCREASE_SOON = 2       // When 10 days or less
-const val DEFAULT_QUALITY_EXPIRED_MULTIPLIER = 2
+private object QualityRules {
+    const val MAX = 50
+    const val MIN = 0
+    const val DEFAULT_DECREASE = -1
+    const val DEFAULT_INCREASE = DEFAULT_DECREASE * -1  // Inverse to decrease in quality
+    const val BACKSTAGE_INCREASE_SOON = 2               // When 5 days or less
+    const val BACKSTAGE_INCREASE_FINAL = 3              // When 10 days or less
+    const val EXPIRED_MULTIPLIER = 2
+}
 
-fun Item.updateQuality() {
-    // SULFURAS never changes
-    if (name == SpecialItemNames.SULFURAS.value) return
+fun Item.processEndOfDay() {
+    updateQuality()
+    updateSellIn()
+}
 
-    // Get how much each item should change in quality
-    val qualityChange = when (name) {
-        SpecialItemNames.AGED_BRIE.value -> getAgedBrieQualityChange()
-        SpecialItemNames.BACKSTAGE_PASSES.value -> getBackstagePassesQualityChange()
-//        SpecialItemNames.CONJURED.value -> getNormalItemQualityChange() * 2
-        else -> getNormalItemQualityChange()
+private fun Item.updateQuality() {
+    val qualityChangeToBeApplied = when (name) {
+        SpecialItems.SULFURAS.value -> return  // "Sulfuras", being a legendary item, never has to be sold or decreases in Quality
+
+        SpecialItems.AGED_BRIE.value -> getItemQualityChange(
+            change = QualityRules.DEFAULT_INCREASE, // "Aged Brie" actually increases in Quality the older it gets
+        )
+
+        SpecialItems.CONJURED.value -> getItemQualityChange(
+            change = QualityRules.DEFAULT_DECREASE * 2, // "Conjured" items degrade in Quality twice as fast as normal items
+        )
+
+        SpecialItems.BACKSTAGE_PASSES.value -> {
+            when (sellIn) {
+                in Int.MIN_VALUE..0 -> {
+                    -quality // Quality drops to 0 after the concert (multiply by -1 so the change value will negate the quality to 0)
+                }
+
+                in 1..5 -> {
+                    QualityRules.BACKSTAGE_INCREASE_FINAL // Quality increases by 3 when there are 5 days or less
+                }
+
+                in 6..10 -> {
+                    QualityRules.BACKSTAGE_INCREASE_SOON // Quality increases by 2 when there are 10 days or less
+                }
+
+                else -> {
+                    getItemQualityChange(
+                        change = QualityRules.DEFAULT_INCREASE, // "Backstage passes", like aged brie, increases in Quality as its SellIn value approaches
+                    )
+                }
+            }
+        }
+
+        else -> getItemQualityChange()
     }
-
-    // Apply change in quality and sellIn
-    quality = (quality + qualityChange).coerceIn(MINIMUM_ITEM_QUALITY, DEFAULT_MAXIMUM_ITEM_QUALITY)
-    sellIn -= 1
+    this.quality = (this.quality + qualityChangeToBeApplied)
+        .coerceIn(
+            minimumValue = QualityRules.MIN,// The Quality of an item is never negative
+            maximumValue = QualityRules.MAX //The Quality of an item is never more than 50
+        )
 }
 
-private fun Item.getNormalItemQualityChange() = if (sellIn <= 0) {
-    DEFAULT_QUALITY_DECREASE * DEFAULT_QUALITY_EXPIRED_MULTIPLIER // Decreases in quality twice as fast when SellIn has passed
+/**
+ *
+ * Multiplies `change` with `isExpiredMultiplier` if this `Item`'s `sellIn` date is `0` or less. Otherwise just returns `change`.
+ *
+ * @return the change at end of day to be applied to the `Item`'s `quality`.
+ * @param change is `-1` by default (decrease in quality).
+// * @param isExpiredMultiplier is `2` by default (decreases in quality twice as fast if `sellIn` is `0` or less). TODO: Can be implemented if needed
+ * */
+private fun Item.getItemQualityChange(
+    change: Int = QualityRules.DEFAULT_DECREASE,
+//    isExpiredMultiplier: Int = QualityRules.EXPIRED_MULTIPLIER, TODO: Can be implemented if needed
+): Int = if (this.sellIn <= 0) {
+    change * QualityRules.EXPIRED_MULTIPLIER
 } else {
-    DEFAULT_QUALITY_DECREASE
+    change
 }
 
-private fun Item.getAgedBrieQualityChange() = if (sellIn <= 0) {
-    DEFAULT_QUALITY_INCREASE * DEFAULT_QUALITY_EXPIRED_MULTIPLIER // Increases in quality twice as fast after SellIn has passed
-} else {
-    DEFAULT_QUALITY_INCREASE // Always increases in quality (default by 1)
-}
-
-private fun Item.getBackstagePassesQualityChange() = when {
-    sellIn <= 0 -> -quality // Expired so minus the inverse to make 0
-    sellIn <= 5 -> BACKSTAGE_PASS_QUALITY_INCREASE_FINAL_DAYS // Quality increases by 3 when there are 5 days or less
-    sellIn <= 10 -> BACKSTAGE_PASS_QUALITY_INCREASE_SOON // Quality increases by 2 when there are 10 days or less
-    else -> DEFAULT_QUALITY_INCREASE // Quality always increases unless expired (default by 1)
+private fun Item.updateSellIn() {
+    this.sellIn += when (name) {
+        SpecialItems.SULFURAS.value -> return  // "Sulfuras", being a legendary item, never has to be sold or decreases in Quality
+        else -> -1
+    }
 }
